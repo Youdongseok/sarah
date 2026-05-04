@@ -256,7 +256,7 @@ function LoveNotesBoard() {
           {paper.kind === 'heart' ? (
             <div className="note-heart-content">
               <div className="note-main-heart">♥</div>
-              <p className="note-heart-text">닫거나 치우며 보기</p>
+              <p className="note-heart-text">닫거나 치우면서 보기</p>
             </div>
           ) : (
             <>
