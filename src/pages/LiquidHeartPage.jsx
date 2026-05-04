@@ -6,17 +6,6 @@ const FILL_LEVELS = [34, 66, 108, 0]
 const HEART_BURST_LOTTIE_SRC =
   'https://lottie.host/7ff54620-bc78-4933-9bf1-1d5e027f8272/6wB7uHpBKD.lottie'
 const HEART_BURST_REVEAL_DELAY = 1600
-const BURST_PARTICLES = Array.from({ length: 20 }, (_, index) => {
-  const angle = (Math.PI * 2 * index) / 20
-  const distance = 90 + (index % 5) * 18
-
-  return {
-    id: index,
-    x: Math.cos(angle) * distance,
-    y: Math.sin(angle) * distance,
-    delay: (index % 4) * 0.03,
-  }
-})
 
 function LiquidHeartPage() {
   const [counter, setCounter] = useState(0)
@@ -35,7 +24,7 @@ function LiquidHeartPage() {
       ? '거의 다 채웠어요!'
       : tankLevel > 0
         ? '더 채울 수 있을 것 같아요!'
-        : '하트를 눌러 채워보세요'
+        : '하트를 눌러 채워보세요!'
 
   useEffect(() => {
     return () => {
@@ -112,28 +101,13 @@ function LiquidHeartPage() {
             onClick={pumpHeart}
           >
             {isBursting ? (
-              <>
-                <div className="burst-particles" aria-hidden="true">
-                  {BURST_PARTICLES.map((particle) => (
-                    <span
-                      key={particle.id}
-                      className="burst-particle"
-                      style={{
-                        '--tx': `${particle.x}px`,
-                        '--ty': `${particle.y}px`,
-                        '--delay': `${particle.delay}s`,
-                      }}
-                    />
-                  ))}
-                </div>
-                <div className="burst-lottie" aria-hidden="true">
-                  <dotlottie-wc
-                    src={HEART_BURST_LOTTIE_SRC}
-                    autoplay
-                    style={{ width: '360px', height: '360px' }}
-                  />
-                </div>
-              </>
+              <div className="burst-lottie" aria-hidden="true">
+                <dotlottie-wc
+                  src={HEART_BURST_LOTTIE_SRC}
+                  autoplay
+                  style={{ width: '360px', height: '360px' }}
+                />
+              </div>
             ) : null}
             <div
               className="liquid-heart"

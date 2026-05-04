@@ -27,6 +27,8 @@ const instagramPosts = [
   'https://www.instagram.com/p/DQ1maiLkwAn/',
 ]
 
+export const INSTAGRAM_POST_COUNT = instagramPosts.length
+
 function createStackedInstagramPapers(mode) {
   const baseX = mode === 'mobile' ? 0 : 120
   const baseY = mode === 'mobile' ? -8 : 8
@@ -50,40 +52,112 @@ function createStackedInstagramPapers(mode) {
   )
 }
 
-const desktopPapers = [
-  {
-    id: 'heart',
-    kind: 'heart',
-    x: -220,
-    y: -96,
-    rotation: -8,
-    z: 3,
-  },
-  ...createStackedInstagramPapers('desktop'),
-]
+function createChaseInstagramPapers(mode) {
+  const baseX = 0
+  const baseY = mode === 'mobile' ? -86 : -76
+  const xOffsets =
+    mode === 'mobile' ? [0, 6, -6, 8, -8, 10, -10, 8, -8, 6] : [0, 10, -10, 14, -14, 18, -18, 14, -14, 10]
+  const yOffsets =
+    mode === 'mobile' ? [0, 18, 36, 54, 72, 90, 108, 126, 144, 162] : [0, 20, 40, 60, 80, 100, 120, 140, 160, 180]
+  const rotations =
+    mode === 'mobile' ? [-2, 2, -2, 2, -2, 2, -2, 2, -2, 2] : [-3, 3, -3, 3, -3, 3, -3, 3, -3, 3]
 
-const mobilePapers = [
-  {
-    id: 'heart',
-    kind: 'heart',
-    x: 0,
-    y: -170,
-    rotation: -6,
-    z: 3,
-  },
-  ...createStackedInstagramPapers('mobile'),
-]
-
-function getInitialPapers() {
-  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-    return mobilePapers
-  }
-
-  return desktopPapers
+  return instagramPosts.map((permalink, index) =>
+    createInstagramPaper(
+      `post-${index + 1}`,
+      permalink,
+      `Instagram Post ${index + 1}`,
+      baseX + xOffsets[index],
+      baseY + yOffsets[index],
+      rotations[index],
+      20 - index,
+    ),
+  )
 }
 
-function LoveNotesBoard() {
-  const [papers, setPapers] = useState(getInitialPapers)
+function getPapersForMode(
+  mode,
+  visibleInstagramCount = INSTAGRAM_POST_COUNT,
+  {
+    showHeart = true,
+    layoutVariant = 'default',
+    currentInstagramIndex = null,
+  } = {},
+) {
+  const allInstagramPapers =
+    layoutVariant === 'chase'
+      ? createChaseInstagramPapers(mode)
+      : createStackedInstagramPapers(mode)
+  const instagramPapers =
+    layoutVariant === 'chase' && currentInstagramIndex !== null
+      ? allInstagramPapers
+          .slice(currentInstagramIndex, currentInstagramIndex + 1)
+          .map((paper) => ({ ...paper, z: 20 }))
+      : allInstagramPapers
+  const heartPaper =
+    mode === 'mobile'
+      ? {
+          id: 'heart',
+          kind: 'heart',
+          x: 0,
+          y: -170,
+          rotation: -6,
+          z: 3,
+        }
+      : {
+          id: 'heart',
+          kind: 'heart',
+          x: -220,
+          y: -96,
+          rotation: -8,
+          z: 3,
+        }
+
+  return [
+    ...(showHeart ? [heartPaper] : []),
+    ...instagramPapers.slice(0, visibleInstagramCount),
+  ]
+}
+
+function getInitialPapers(
+  visibleInstagramCount = INSTAGRAM_POST_COUNT,
+  options = {},
+) {
+  if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+    return getPapersForMode('mobile', visibleInstagramCount, options)
+  }
+
+  return getPapersForMode('desktop', visibleInstagramCount, options)
+}
+
+function mergePapers(current, next) {
+  return next.map((paper) => {
+    const existing = current.find((item) => item.id === paper.id)
+
+    return existing
+      ? {
+          ...paper,
+          x: existing.x,
+          y: existing.y,
+          rotation: existing.rotation,
+          z: existing.z,
+        }
+      : paper
+  })
+}
+
+function LoveNotesBoard({
+  visibleInstagramCount = INSTAGRAM_POST_COUNT,
+  isDropSequence = false,
+  showHeart = true,
+  layoutVariant = 'default',
+  isInteractive = true,
+  currentInstagramIndex = null,
+  onInstagramClose,
+}) {
+  const [papers, setPapers] = useState(() =>
+    getInitialPapers(visibleInstagramCount, { showHeart, layoutVariant, currentInstagramIndex }),
+  )
   const [isMusicOn, setIsMusicOn] = useState(false)
   const nextZRef = useRef(20)
   const dragRef = useRef(null)
@@ -99,12 +173,34 @@ function LoveNotesBoard() {
       }
 
       layoutModeRef.current = nextMode
-      setPapers(nextMode === 'mobile' ? mobilePapers : desktopPapers)
+      setPapers((current) =>
+        mergePapers(
+          current,
+          getPapersForMode(nextMode, visibleInstagramCount, {
+            showHeart,
+            layoutVariant,
+            currentInstagramIndex,
+          }),
+        ),
+      )
     }
 
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [currentInstagramIndex, layoutVariant, showHeart, visibleInstagramCount])
+
+  useEffect(() => {
+    setPapers((current) =>
+      mergePapers(
+        current,
+        getPapersForMode(layoutModeRef.current, visibleInstagramCount, {
+          showHeart,
+          layoutVariant,
+          currentInstagramIndex,
+        }),
+      ),
+    )
+  }, [currentInstagramIndex, layoutVariant, showHeart, visibleInstagramCount])
 
   useEffect(() => {
     const existingScript = document.querySelector('script[data-instgrm-script]')
@@ -125,6 +221,10 @@ function LoveNotesBoard() {
   }, [papers])
 
   const beginDrag = (event, id) => {
+    if (!isInteractive) {
+      return
+    }
+
     if (event.button !== 0) {
       return
     }
@@ -153,6 +253,10 @@ function LoveNotesBoard() {
   }
 
   const handlePointerMove = (event) => {
+    if (!isInteractive) {
+      return
+    }
+
     if (!dragRef.current) {
       return
     }
@@ -177,10 +281,24 @@ function LoveNotesBoard() {
   const closePaper = (event, id) => {
     event.stopPropagation()
     event.preventDefault()
+
+    if (layoutVariant === 'chase' && onInstagramClose) {
+      onInstagramClose(id)
+      return
+    }
+
+    if (!isInteractive) {
+      return
+    }
+
     setPapers((current) => current.filter((item) => item.id !== id))
   }
 
   const rotatePaper = (event, id) => {
+    if (!isInteractive) {
+      return
+    }
+
     event.preventDefault()
 
     const newZ = nextZRef.current
@@ -216,7 +334,7 @@ function LoveNotesBoard() {
 
   return (
     <div
-      className="notes-board"
+      className={`notes-board${layoutVariant === 'chase' ? ' is-chasing' : ''}`}
       onPointerMove={handlePointerMove}
       onPointerUp={stopDrag}
       onPointerLeave={stopDrag}
@@ -233,7 +351,7 @@ function LoveNotesBoard() {
         <button
           key={paper.id}
           type="button"
-          className={`note-paper note-${paper.kind}`}
+          className={`note-paper note-${paper.kind}${isDropSequence && paper.kind === 'instagram' ? ' is-dropping' : ''}`}
           style={{
             transform: `translate(-50%, -50%) translate(${paper.x}px, ${paper.y}px) rotate(${paper.rotation}deg)`,
             zIndex: paper.z,
@@ -332,16 +450,20 @@ function LoveNotesBoard() {
         </button>
       ))}
 
-      <button type="button" className="notes-music-toggle" onClick={toggleMusic}>
-        {isMusicOn ? '♫' : '♪'}
-      </button>
+      {isInteractive ? (
+        <>
+          <button type="button" className="notes-music-toggle" onClick={toggleMusic}>
+            {isMusicOn ? '♫' : '♪'}
+          </button>
 
-      <audio ref={audioRef} loop>
-        <source
-          src="https://alsocreative.github.io/love-notes-interactive/assets/music.mp3"
-          type="audio/mpeg"
-        />
-      </audio>
+          <audio ref={audioRef} loop>
+            <source
+              src="https://alsocreative.github.io/love-notes-interactive/assets/music.mp3"
+              type="audio/mpeg"
+            />
+          </audio>
+        </>
+      ) : null}
     </div>
   )
 }
