@@ -1196,24 +1196,24 @@ body {
 }
 
 .note-paper.note-instagram {
-  width: min(460px, calc(100vw - 40px));
+  width: min(360px, calc(100vw - 40px));
   min-width: 0;
   max-width: none;
   padding: 0;
   overflow: hidden;
   border: 0;
-  border-radius: 22px;
+  border-radius: 18px;
   background: #ffffff;
   box-shadow:
-    0 30px 78px rgba(0, 0, 0, 0.26),
-    0 12px 30px rgba(0, 0, 0, 0.14);
+    0 24px 58px rgba(0, 0, 0, 0.22),
+    0 10px 24px rgba(0, 0, 0, 0.12);
   backdrop-filter: none;
   cursor: default;
   touch-action: auto;
 }
 
 .notes-board.is-chasing .note-paper.note-instagram {
-  width: min(480px, calc(100vw - 32px));
+  width: min(380px, calc(100vw - 32px));
   padding: 0;
 }
 
@@ -1225,7 +1225,7 @@ body {
   position: relative;
   width: 100%;
   overflow: hidden;
-  border-radius: 22px;
+  border-radius: 18px;
   background: #ffffff;
 }
 
@@ -1235,7 +1235,7 @@ body {
   width: 100% !important;
   max-width: 100% !important;
   border: 0 !important;
-  border-radius: 22px !important;
+  border-radius: 18px !important;
   box-shadow: none !important;
 }
 
@@ -1245,16 +1245,16 @@ body {
 
 .note-instagram-close-button {
   position: absolute;
-  right: 8px;
-  top: 8px;
+  right: 7px;
+  top: 7px;
   z-index: 90;
-  width: 112px;
-  height: 36px;
+  width: 100px;
+  height: 34px;
   border: 0;
   border-radius: 8px;
   background: #ffffff;
   color: #111827;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: -0.02em;
   box-shadow:
@@ -1275,23 +1275,23 @@ body {
 
   .note-paper.note-instagram,
   .notes-board.is-chasing .note-paper.note-instagram {
-    width: min(360px, calc(100vw - 20px));
+    width: min(300px, calc(100vw - 20px));
     max-width: none;
     padding: 0;
-    border-radius: 18px;
+    border-radius: 16px;
   }
 
   .note-instagram-embed,
   .note-instagram-embed .instagram-media {
-    border-radius: 18px !important;
+    border-radius: 16px !important;
   }
 
   .note-instagram-close-button {
     right: 4px;
     top: 7px;
-    width: 122px;
-    height: 36px;
-    font-size: 13px;
+    width: 92px;
+    height: 32px;
+    font-size: 12px;
     border-radius: 8px;
   }
 }
