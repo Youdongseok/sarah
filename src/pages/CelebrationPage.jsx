@@ -3,11 +3,32 @@ import LoveNotesBoard, { INSTAGRAM_POST_COUNT } from './LoveNotesBoard.jsx'
 
 const DOG_FETCH_LOTTIE_SRC =
   'https://lottie.host/d5276957-ebfc-4e5c-bc34-e2d1e626d174/n1UOqclfHy.lottie'
+
 const RUNNING_DOG_LOTTIE_SRC =
   'https://lottie.host/3dd3c1ec-40f3-4b82-ba68-80efa2c09c77/vhiToPZ9sQ.lottie'
+
 const DOG_FETCH_REVEAL_DELAY = 2200
 const CHASE_RUN_DURATION = 2200
 const CHASE_RESTART_DELAY = 320
+const DEFAULT_CHASE_CARD_GROUP_SIZE = 3
+
+function getChaseGroupSize(currentIndex) {
+  const remainingCount = INSTAGRAM_POST_COUNT - currentIndex
+
+  if (remainingCount <= 0) {
+    return 0
+  }
+
+  if (remainingCount <= DEFAULT_CHASE_CARD_GROUP_SIZE) {
+    return remainingCount
+  }
+
+  if (remainingCount === DEFAULT_CHASE_CARD_GROUP_SIZE + 1) {
+    return remainingCount
+  }
+
+  return DEFAULT_CHASE_CARD_GROUP_SIZE
+}
 
 function CelebrationPage() {
   const [clickCount, setClickCount] = useState(0)
@@ -15,6 +36,7 @@ function CelebrationPage() {
   const [currentInstagramIndex, setCurrentInstagramIndex] = useState(0)
   const [isShowingChaseCard, setIsShowingChaseCard] = useState(false)
   const [chaseRunCycle, setChaseRunCycle] = useState(0)
+  const [closedChaseCardIds, setClosedChaseCardIds] = useState([])
   const timeoutRef = useRef([])
 
   useEffect(() => {
@@ -49,34 +71,53 @@ function CelebrationPage() {
   const startChaseSequence = () => {
     setScene('chasing')
     setCurrentInstagramIndex(0)
+    setClosedChaseCardIds([])
     setIsShowingChaseCard(false)
     setChaseRunCycle(1)
+
     registerTimeout(() => {
       setIsShowingChaseCard(true)
     }, CHASE_RUN_DURATION)
   }
 
-  const handleChaseCardClose = () => {
+  const handleChaseCardClose = (closedId) => {
     if (scene !== 'chasing' || !isShowingChaseCard) {
       return
     }
 
-    if (currentInstagramIndex >= INSTAGRAM_POST_COUNT - 1) {
-      setScene('revealed')
-      return
-    }
+    setClosedChaseCardIds((current) => {
+      const nextClosedIds = current.includes(closedId)
+        ? current
+        : [...current, closedId]
 
-    const nextIndex = currentInstagramIndex + 1
-    setCurrentInstagramIndex(nextIndex)
-    setIsShowingChaseCard(false)
+      const currentGroupSize = getChaseGroupSize(currentInstagramIndex)
+      const isCurrentGroupFinished = nextClosedIds.length >= currentGroupSize
 
-    registerTimeout(() => {
-      setChaseRunCycle((current) => current + 1)
-    }, CHASE_RESTART_DELAY)
+      if (!isCurrentGroupFinished) {
+        return nextClosedIds
+      }
 
-    registerTimeout(() => {
-      setIsShowingChaseCard(true)
-    }, CHASE_RESTART_DELAY + CHASE_RUN_DURATION)
+      const nextIndex = currentInstagramIndex + currentGroupSize
+
+      if (nextIndex >= INSTAGRAM_POST_COUNT) {
+        setScene('revealed')
+        return []
+      }
+
+      setCurrentInstagramIndex(nextIndex)
+      setIsShowingChaseCard(false)
+
+      registerTimeout(() => {
+        setChaseRunCycle((currentCycle) => currentCycle + 1)
+      }, CHASE_RESTART_DELAY)
+
+      registerTimeout(() => {
+        setClosedChaseCardIds([])
+        setIsShowingChaseCard(true)
+      }, CHASE_RESTART_DELAY + CHASE_RUN_DURATION)
+
+      return nextClosedIds
+    })
   }
 
   const handleLetterClick = () => {
@@ -90,6 +131,7 @@ function CelebrationPage() {
     }
 
     setScene('fetching')
+
     registerTimeout(() => {
       setScene('lost')
     }, DOG_FETCH_REVEAL_DELAY)
@@ -111,15 +153,23 @@ function CelebrationPage() {
   const showLostLetterMessage = scene === 'lost' || scene === 'prompt'
   const isChasing = scene === 'chasing'
   const isLoveRevealed = scene === 'revealed'
-  const chaseVisibleInstagramCount = isShowingChaseCard ? 1 : 0
+
+  const chaseVisibleInstagramCount = isShowingChaseCard
+    ? getChaseGroupSize(currentInstagramIndex)
+    : 0
 
   return (
     <div
-      className={`letter-page${isLoveRevealed ? ' love-revealed' : ''}${isFetchingLetter ? ' is-fetching' : ''}`}
+      className={`letter-page${isLoveRevealed ? ' love-revealed' : ''}${
+        isFetchingLetter ? ' is-fetching' : ''
+      }`}
     >
       {isChasing || isLoveRevealed ? (
         <LoveNotesBoard
-          visibleInstagramCount={isLoveRevealed ? INSTAGRAM_POST_COUNT : chaseVisibleInstagramCount}
+          visibleInstagramCount={
+            isLoveRevealed ? 0 : chaseVisibleInstagramCount
+          }
+          hiddenPaperIds={isChasing ? closedChaseCardIds : []}
           isDropSequence={isChasing && isShowingChaseCard}
           showHeart={!isChasing}
           layoutVariant={isChasing ? 'chase' : 'default'}
@@ -136,7 +186,9 @@ function CelebrationPage() {
           onClick={handleLostLetterScreenClick}
         >
           <p className="liquid-copy lost-letter-copy">
-            {scene === 'prompt' ? '서둘러서 쫒아요!!' : '이런! 편지지를 가져갔어요!'}
+            {scene === 'prompt'
+              ? '서둘러서 쫒아요!!'
+              : '이런! 편지지를 가져갔어요!'}
           </p>
         </button>
       ) : null}
@@ -173,7 +225,9 @@ function CelebrationPage() {
       {scene === 'envelope' || isFetchingLetter ? (
         <button
           type="button"
-          className={`letter-image${isOpened || isFetchingLetter ? ' opened' : ''}${isFetchingLetter ? ' is-fetching' : ''}`}
+          className={`letter-image${
+            isOpened || isFetchingLetter ? ' opened' : ''
+          }${isFetchingLetter ? ' is-fetching' : ''}`}
           onClick={handleLetterClick}
           aria-label="Open love letter"
         >

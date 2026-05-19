@@ -29,38 +29,46 @@ const instagramPosts = [
 
 export const INSTAGRAM_POST_COUNT = instagramPosts.length
 
-function createStackedInstagramPapers(mode) {
-  const baseX = mode === 'mobile' ? 0 : 120
-  const baseY = mode === 'mobile' ? -8 : 8
-  const xOffsets =
-    mode === 'mobile' ? [0, 8, -6, 10, -8, 6, -4, 8, -6, 4] : [0, 18, -14, 22, -18, 16, -10, 14, -12, 10]
-  const yOffsets =
-    mode === 'mobile' ? [0, 10, 20, 30, 40, 50, 60, 70, 80, 90] : [0, 12, 24, 36, 48, 60, 72, 84, 96, 108]
-  const rotations =
-    mode === 'mobile' ? [-2, 3, -3, 2, -2, 3, -3, 2, -2, 2] : [-3, 4, -4, 3, -3, 4, -4, 3, -3, 2]
+function createInstagramPaperList(mode, variant) {
+  const isMobile = mode === 'mobile'
 
-  return instagramPosts.map((permalink, index) =>
-    createInstagramPaper(
-      `post-${index + 1}`,
-      permalink,
-      `Instagram Post ${index + 1}`,
-      baseX + xOffsets[index],
-      baseY + yOffsets[index],
-      rotations[index],
-      20 - index,
-    ),
-  )
-}
+  const baseX = variant === 'chase' ? 0 : isMobile ? 0 : 120
 
-function createChaseInstagramPapers(mode) {
-  const baseX = 0
-  const baseY = mode === 'mobile' ? -86 : -76
+  const baseY =
+    variant === 'chase'
+      ? isMobile
+        ? -92
+        : -88
+      : isMobile
+        ? -8
+        : 8
+
   const xOffsets =
-    mode === 'mobile' ? [0, 6, -6, 8, -8, 10, -10, 8, -8, 6] : [0, 10, -10, 14, -14, 18, -18, 14, -14, 10]
+    variant === 'chase'
+      ? isMobile
+        ? [0, 10, -10, 12, -12, 14, -14, 12, -12, 8]
+        : [0, 18, -18, 24, -24, 30, -30, 24, -24, 16]
+      : isMobile
+        ? [0, 8, -6, 10, -8, 6, -4, 8, -6, 4]
+        : [0, 18, -14, 22, -18, 16, -10, 14, -12, 10]
+
   const yOffsets =
-    mode === 'mobile' ? [0, 18, 36, 54, 72, 90, 108, 126, 144, 162] : [0, 20, 40, 60, 80, 100, 120, 140, 160, 180]
+    variant === 'chase'
+      ? isMobile
+        ? [0, 22, 44, 66, 88, 110, 132, 154, 176, 198]
+        : [0, 26, 52, 78, 104, 130, 156, 182, 208, 234]
+      : isMobile
+        ? [0, 10, 20, 30, 40, 50, 60, 70, 80, 90]
+        : [0, 12, 24, 36, 48, 60, 72, 84, 96, 108]
+
   const rotations =
-    mode === 'mobile' ? [-2, 2, -2, 2, -2, 2, -2, 2, -2, 2] : [-3, 3, -3, 3, -3, 3, -3, 3, -3, 3]
+    variant === 'chase'
+      ? isMobile
+        ? [-1.5, 1.5, -1.5, 1.5, -1.5, 1.5, -1.5, 1.5, -1.5, 1.5]
+        : [-2.5, 2.5, -2.5, 2.5, -2.5, 2.5, -2.5, 2.5, -2.5, 2.5]
+      : isMobile
+        ? [-2, 3, -3, 2, -2, 3, -3, 2, -2, 2]
+        : [-3, 4, -4, 3, -3, 4, -4, 3, -3, 2]
 
   return instagramPosts.map((permalink, index) =>
     createInstagramPaper(
@@ -84,16 +92,24 @@ function getPapersForMode(
     currentInstagramIndex = null,
   } = {},
 ) {
-  const allInstagramPapers =
-    layoutVariant === 'chase'
-      ? createChaseInstagramPapers(mode)
-      : createStackedInstagramPapers(mode)
+  const allInstagramPapers = createInstagramPaperList(
+    mode,
+    layoutVariant === 'chase' ? 'chase' : 'default',
+  )
+
   const instagramPapers =
     layoutVariant === 'chase' && currentInstagramIndex !== null
       ? allInstagramPapers
-          .slice(currentInstagramIndex, currentInstagramIndex + 1)
-          .map((paper) => ({ ...paper, z: 20 }))
+          .slice(
+            currentInstagramIndex,
+            currentInstagramIndex + visibleInstagramCount,
+          )
+          .map((paper, index) => ({
+            ...paper,
+            z: 20 - index,
+          }))
       : allInstagramPapers
+
   const heartPaper =
     mode === 'mobile'
       ? {
@@ -148,6 +164,7 @@ function mergePapers(current, next) {
 
 function LoveNotesBoard({
   visibleInstagramCount = INSTAGRAM_POST_COUNT,
+  hiddenPaperIds = [],
   isDropSequence = false,
   showHeart = true,
   layoutVariant = 'default',
@@ -156,13 +173,20 @@ function LoveNotesBoard({
   onInstagramClose,
 }) {
   const [papers, setPapers] = useState(() =>
-    getInitialPapers(visibleInstagramCount, { showHeart, layoutVariant, currentInstagramIndex }),
+    getInitialPapers(visibleInstagramCount, {
+      showHeart,
+      layoutVariant,
+      currentInstagramIndex,
+    }),
   )
-  const [isMusicOn, setIsMusicOn] = useState(false)
+
   const nextZRef = useRef(20)
   const dragRef = useRef(null)
-  const audioRef = useRef(null)
-  const layoutModeRef = useRef(typeof window !== 'undefined' && window.innerWidth <= 768 ? 'mobile' : 'desktop')
+  const layoutModeRef = useRef(
+    typeof window !== 'undefined' && window.innerWidth <= 768
+      ? 'mobile'
+      : 'desktop',
+  )
 
   useEffect(() => {
     const handleResize = () => {
@@ -173,6 +197,7 @@ function LoveNotesBoard({
       }
 
       layoutModeRef.current = nextMode
+
       setPapers((current) =>
         mergePapers(
           current,
@@ -186,6 +211,7 @@ function LoveNotesBoard({
     }
 
     window.addEventListener('resize', handleResize)
+
     return () => window.removeEventListener('resize', handleResize)
   }, [currentInstagramIndex, layoutVariant, showHeart, visibleInstagramCount])
 
@@ -203,22 +229,44 @@ function LoveNotesBoard({
   }, [currentInstagramIndex, layoutVariant, showHeart, visibleInstagramCount])
 
   useEffect(() => {
+    if (visibleInstagramCount <= 0) {
+      return undefined
+    }
+
+    let timeoutId
+
+    const processInstagramEmbeds = () => {
+      timeoutId = window.setTimeout(() => {
+        window.instgrm?.Embeds?.process()
+      }, 120)
+    }
+
     const existingScript = document.querySelector('script[data-instgrm-script]')
 
     if (!existingScript) {
       const script = document.createElement('script')
       script.async = true
+      script.defer = true
       script.src = 'https://www.instagram.com/embed.js'
       script.setAttribute('data-instgrm-script', 'true')
-      script.onload = () => {
-        window.instgrm?.Embeds?.process()
-      }
+      script.onload = processInstagramEmbeds
       document.body.appendChild(script)
-      return
+
+      return () => {
+        if (timeoutId) {
+          window.clearTimeout(timeoutId)
+        }
+      }
     }
 
-    window.instgrm?.Embeds?.process()
-  }, [papers])
+    processInstagramEmbeds()
+
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId)
+      }
+    }
+  }, [visibleInstagramCount, currentInstagramIndex, layoutVariant])
 
   const beginDrag = (event, id) => {
     if (!isInteractive) {
@@ -229,12 +277,14 @@ function LoveNotesBoard({
       return
     }
 
-    event.preventDefault()
     const paper = papers.find((item) => item.id === id)
 
     if (!paper) {
       return
     }
+
+    event.preventDefault()
+    event.stopPropagation()
 
     const newZ = nextZRef.current
     nextZRef.current += 1
@@ -313,28 +363,50 @@ function LoveNotesBoard({
     )
   }
 
-  const toggleMusic = async () => {
-    if (!audioRef.current) {
+  const visiblePapers = papers.filter(
+    (paper) => !hiddenPaperIds.includes(paper.id),
+  )
+
+  const visibleInstagramPapers = visiblePapers.filter(
+    (paper) => paper.kind === 'instagram',
+  )
+
+  const closeTopInstagramPaper = (event) => {
+    if (layoutVariant !== 'chase') {
       return
     }
 
-    if (isMusicOn) {
-      audioRef.current.pause()
-      setIsMusicOn(false)
+    if (!onInstagramClose) {
       return
     }
 
-    try {
-      await audioRef.current.play()
-      setIsMusicOn(true)
-    } catch {
-      setIsMusicOn(false)
+    if (visibleInstagramPapers.length <= 0) {
+      return
     }
+
+    const topPaper = [...visibleInstagramPapers].sort((a, b) => b.z - a.z)[0]
+
+    closePaper(event, topPaper.id)
+  }
+
+  const handleBoardClick = (event) => {
+    const clickedInsidePaper = event.target.closest('.note-paper')
+
+    if (clickedInsidePaper) {
+      return
+    }
+
+    closeTopInstagramPaper(event)
+  }
+
+  const handlePaperClick = (event) => {
+    event.stopPropagation()
   }
 
   return (
     <div
       className={`notes-board${layoutVariant === 'chase' ? ' is-chasing' : ''}`}
+      onClick={handleBoardClick}
       onPointerMove={handlePointerMove}
       onPointerUp={stopDrag}
       onPointerLeave={stopDrag}
@@ -347,27 +419,31 @@ function LoveNotesBoard({
         <div className="notes-shape-heart heart5" />
       </div>
 
-      {papers.map((paper) => (
-        <button
+      {visiblePapers.map((paper) => (
+        <div
           key={paper.id}
-          type="button"
-          className={`note-paper note-${paper.kind}${isDropSequence && paper.kind === 'instagram' ? ' is-dropping' : ''}`}
+          role="button"
+          tabIndex={0}
+          className={`note-paper note-${paper.kind}${
+            isDropSequence && paper.kind === 'instagram' ? ' is-dropping' : ''
+          }`}
           style={{
             transform: `translate(-50%, -50%) translate(${paper.x}px, ${paper.y}px) rotate(${paper.rotation}deg)`,
             zIndex: paper.z,
           }}
+          onClick={handlePaperClick}
           onPointerDown={(event) => beginDrag(event, paper.id)}
           onContextMenu={(event) => rotatePaper(event, paper.id)}
         >
           {paper.kind === 'instagram' ? (
             <button
               type="button"
-              className="note-close-button"
+              className="note-instagram-close-button"
               onClick={(event) => closePaper(event, paper.id)}
               onPointerDown={(event) => event.stopPropagation()}
-              aria-label="Close Instagram card"
+              aria-label="인스타그램 카드 닫기"
             >
-              ×
+              닫기
             </button>
           ) : null}
 
@@ -378,19 +454,27 @@ function LoveNotesBoard({
             </div>
           ) : (
             <>
-              <div className="note-paper-header">
-                <span className="note-pin">
-                  {paper.kind === 'special' ? '★' : '📌'}
-                </span>
-                <span className={`note-paper-title${paper.kind === 'special' ? ' special' : ''}`}>
-                  {paper.title}
-                </span>
-              </div>
+              {paper.kind !== 'instagram' ? (
+                <div className="note-paper-header">
+                  <span className="note-pin">
+                    {paper.kind === 'special' ? '★' : '📌'}
+                  </span>
+                  <span
+                    className={`note-paper-title${
+                      paper.kind === 'special' ? ' special' : ''
+                    }`}
+                  >
+                    {paper.title}
+                  </span>
+                </div>
+              ) : null}
 
               {paper.kind === 'image' ? (
                 <>
                   <p className="note-handwriting">{paper.lines[0]}</p>
-                  <p className="note-handwriting note-highlight">{paper.lines[1]}</p>
+                  <p className="note-handwriting note-highlight">
+                    {paper.lines[1]}
+                  </p>
                   <div className="note-image-frame">
                     <img src={paper.image} alt={paper.title} />
                     <span className="note-image-badge">♥</span>
@@ -401,6 +485,7 @@ function LoveNotesBoard({
               {paper.kind === 'instagram' ? (
                 <div className="note-instagram-embed">
                   <blockquote
+                    key={paper.permalink}
                     className="instagram-media"
                     data-instgrm-captioned=""
                     data-instgrm-permalink={`${paper.permalink}?utm_source=ig_embed&utm_campaign=loading`}
@@ -420,7 +505,9 @@ function LoveNotesBoard({
               {paper.kind === 'special' ? (
                 <>
                   <p className="note-handwriting-large">{paper.lines[0]}</p>
-                  <p className="note-handwriting-large note-highlight">{paper.lines[1]}</p>
+                  <p className="note-handwriting-large note-highlight">
+                    {paper.lines[1]}
+                  </p>
                   <div className="note-decorative-border" />
                 </>
               ) : null}
@@ -429,7 +516,9 @@ function LoveNotesBoard({
                 <>
                   <p className="note-handwriting">{paper.lines[0]}</p>
                   <p className="note-handwriting">{paper.lines[1]}</p>
-                  <p className="note-handwriting note-love-text">{paper.lines[2]}</p>
+                  <p className="note-handwriting note-love-text">
+                    {paper.lines[2]}
+                  </p>
                   <div className="note-stickers">
                     <span>⭐</span>
                     <span>💫</span>
@@ -447,23 +536,8 @@ function LoveNotesBoard({
               ) : null}
             </>
           )}
-        </button>
+        </div>
       ))}
-
-      {isInteractive ? (
-        <>
-          <button type="button" className="notes-music-toggle" onClick={toggleMusic}>
-            {isMusicOn ? '♫' : '♪'}
-          </button>
-
-          <audio ref={audioRef} loop>
-            <source
-              src="https://alsocreative.github.io/love-notes-interactive/assets/music.mp3"
-              type="audio/mpeg"
-            />
-          </audio>
-        </>
-      ) : null}
     </div>
   )
 }
