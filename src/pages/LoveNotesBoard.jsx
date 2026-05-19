@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { PawPrint } from 'lucide-react'
 function createInstagramPaper(id, permalink, title, x, y, rotation, z) {
   return {
     id,
@@ -110,19 +111,19 @@ function getPapersForMode(
           }))
       : allInstagramPapers
 
-  const heartPaper =
+  const anniversaryLetterPaper =
     mode === 'mobile'
       ? {
-          id: 'heart',
-          kind: 'heart',
+          id: 'anniversary-letter',
+          kind: 'anniversaryLetter',
           x: 0,
           y: -170,
           rotation: -6,
           z: 3,
         }
       : {
-          id: 'heart',
-          kind: 'heart',
+          id: 'anniversary-letter',
+          kind: 'anniversaryLetter',
           x: -220,
           y: -96,
           rotation: -8,
@@ -130,7 +131,7 @@ function getPapersForMode(
         }
 
   return [
-    ...(showHeart ? [heartPaper] : []),
+    ...(showHeart ? [anniversaryLetterPaper] : []),
     ...instagramPapers.slice(0, visibleInstagramCount),
   ]
 }
@@ -162,6 +163,64 @@ function mergePapers(current, next) {
   })
 }
 
+function AnniversaryLetterPage({ onClose }) {
+  return (
+    <section className="anniversary-letter-page" aria-label="200일 기념 편지">
+      <div className="anniversary-letter-bg-hearts" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
+      </div>
+
+     
+
+      <article className="anniversary-letter-sheet">
+        <div className="letter-border" />
+
+        <div className="anniversary-letter-sheet-header">
+          
+          <h1>200일 기념 편지!!</h1>
+          
+        </div>
+
+        <div className="anniversary-letter-body">
+          <p>사라 안뇽! 나 동동이야! <br />강아지가 편지지 훔쳐가서 놀랐지</p>
+          <p>
+           그거 알아?<br />
+우리 만난 지 벌써 200일이야!!<br />
+
+처음 만났을 때 크게 손 흔들던 것도 생각나고, 같이 빵 나눠 먹었던 것도 생각나.<br />
+어느새 손도 잡고, 뽀뽀도 하고, <br />시간이 진짜 빠르게 지나간 것 같아.<br />
+그만큼 사라랑 보낸 하루하루가 <br />나한테는 다 너무 소중하고 행복했어.<br />
+서로 장난치고 웃었던 날도,<br /> 산책하며 진지한 대화 했던 날도, <br />괜히 삐졌다가 금방 풀었던 날도 <br />전부 다 우리다운 추억인 것 같아. <br />
+
+그래서 인스타에 올린 우리 추억들을 모아봤어! <br />
+사라랑 함께한 순간들이 이렇게 많이 쌓였다는 게 너무 좋아!! <br />앞으로 더 많이 쌓아가고 싶어!!!<br />
+내가 부족할 때도 있었을 텐데 예쁘게 봐주고, <br />하루하루를 더 특별하게 만들어줘서 고마워.<br />
+앞으로도 지금처럼 장난도 많이 치고, <br />서로 챙겨주고, <br />가끔 아웅다웅 하더라도 <br />금방 풀면서 오래오래 예쁘게 만나자.<br />
+200일 동안 너무너무 행복했어<br /> 많이많이 사랑해
+          </p>
+          
+        </div>
+
+        <div className="anniversary-letter-footer">
+          <span>From. 동동</span>
+         <div className="anniversary-letter-stamp cursor-pointer" aria-label="강아지 발바닥 도장">
+  <PawPrint
+  size={40}
+  strokeWidth={2.6}
+  color="rgba(216, 166, 33, 0.72)"
+  fill="rgba(216, 166, 33, 0.72)"
+/>
+</div>
+        </div>
+      </article>
+    </section>
+  )
+}
+
 function LoveNotesBoard({
   visibleInstagramCount = INSTAGRAM_POST_COUNT,
   hiddenPaperIds = [],
@@ -179,6 +238,7 @@ function LoveNotesBoard({
       currentInstagramIndex,
     }),
   )
+  const [isAnniversaryLetterOpen, setIsAnniversaryLetterOpen] = useState(false)
 
   const nextZRef = useRef(20)
   const dragRef = useRef(null)
@@ -283,6 +343,10 @@ function LoveNotesBoard({
       return
     }
 
+    if (paper.kind === 'anniversaryLetter') {
+      return
+    }
+
     event.preventDefault()
     event.stopPropagation()
 
@@ -349,6 +413,12 @@ function LoveNotesBoard({
       return
     }
 
+    const paper = papers.find((item) => item.id === id)
+
+    if (paper?.kind === 'anniversaryLetter') {
+      return
+    }
+
     event.preventDefault()
 
     const newZ = nextZRef.current
@@ -361,6 +431,20 @@ function LoveNotesBoard({
           : item,
       ),
     )
+  }
+
+  const openAnniversaryLetter = (event) => {
+    event.stopPropagation()
+    event.preventDefault()
+    setIsAnniversaryLetterOpen(true)
+  }
+
+  const handleAnniversaryLetterKeyDown = (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return
+    }
+
+    openAnniversaryLetter(event)
   }
 
   const visiblePapers = papers.filter(
@@ -404,141 +488,166 @@ function LoveNotesBoard({
   }
 
   return (
-    <div
-      className={`notes-board${layoutVariant === 'chase' ? ' is-chasing' : ''}`}
-      onClick={handleBoardClick}
-      onPointerMove={handlePointerMove}
-      onPointerUp={stopDrag}
-      onPointerLeave={stopDrag}
-    >
-      <div className="notes-floating-hearts" aria-hidden="true">
-        <div className="notes-shape-heart heart1" />
-        <div className="notes-shape-heart heart2" />
-        <div className="notes-shape-heart heart3" />
-        <div className="notes-shape-heart heart4" />
-        <div className="notes-shape-heart heart5" />
+    <>
+      <div
+        className={`notes-board${layoutVariant === 'chase' ? ' is-chasing' : ''}`}
+        onClick={handleBoardClick}
+        onPointerMove={handlePointerMove}
+        onPointerUp={stopDrag}
+        onPointerLeave={stopDrag}
+      >
+        <div className="notes-floating-hearts" aria-hidden="true">
+          <div className="notes-shape-heart heart1" />
+          <div className="notes-shape-heart heart2" />
+          <div className="notes-shape-heart heart3" />
+          <div className="notes-shape-heart heart4" />
+          <div className="notes-shape-heart heart5" />
+        </div>
+
+        {visiblePapers.map((paper) => (
+          <div
+            key={paper.id}
+            role="button"
+            tabIndex={0}
+            className={`note-paper note-${paper.kind}${
+              isDropSequence && paper.kind === 'instagram' ? ' is-dropping' : ''
+            }`}
+            style={{
+              transform: `translate(-50%, -50%) translate(${paper.x}px, ${paper.y}px) rotate(${paper.rotation}deg)`,
+              zIndex: paper.z,
+            }}
+            onClick={
+              paper.kind === 'anniversaryLetter'
+                ? openAnniversaryLetter
+                : handlePaperClick
+            }
+            onKeyDown={
+              paper.kind === 'anniversaryLetter'
+                ? handleAnniversaryLetterKeyDown
+                : undefined
+            }
+            onPointerDown={(event) => beginDrag(event, paper.id)}
+            onContextMenu={(event) => rotatePaper(event, paper.id)}
+          >
+            {paper.kind === 'instagram' ? (
+              <button
+                type="button"
+                className="note-instagram-close-button"
+                onClick={(event) => closePaper(event, paper.id)}
+                onPointerDown={(event) => event.stopPropagation()}
+                aria-label="인스타그램 카드 닫기"
+              >
+                닫기
+              </button>
+            ) : null}
+
+            {paper.kind === 'anniversaryLetter' ? (
+              <div className="note-anniversary-letter-wrap">
+                <div className="letter note-anniversary-letter-paper">
+                  <div className="letter-border" />
+                  <div className="letter-title" />
+                  <div className="letter-context" />
+                  <div className="letter-stamp">
+                    <div className="letter-stamp-inner" />
+                  </div>
+
+                 
+                </div>
+              </div>
+            ) : (
+              <>
+                {paper.kind !== 'instagram' ? (
+                  <div className="note-paper-header">
+                    <span className="note-pin">
+                      {paper.kind === 'special' ? '★' : '📌'}
+                    </span>
+                    <span
+                      className={`note-paper-title${
+                        paper.kind === 'special' ? ' special' : ''
+                      }`}
+                    >
+                      {paper.title}
+                    </span>
+                  </div>
+                ) : null}
+
+                {paper.kind === 'image' ? (
+                  <>
+                    <p className="note-handwriting">{paper.lines[0]}</p>
+                    <p className="note-handwriting note-highlight">
+                      {paper.lines[1]}
+                    </p>
+                    <div className="note-image-frame">
+                      <img src={paper.image} alt={paper.title} />
+                      <span className="note-image-badge">♥</span>
+                    </div>
+                  </>
+                ) : null}
+
+                {paper.kind === 'instagram' ? (
+                  <div className="note-instagram-embed">
+                    <blockquote
+                      key={paper.permalink}
+                      className="instagram-media"
+                      data-instgrm-captioned=""
+                      data-instgrm-permalink={`${paper.permalink}?utm_source=ig_embed&utm_campaign=loading`}
+                      data-instgrm-version="14"
+                    >
+                      <a
+                        href={`${paper.permalink}?utm_source=ig_embed&utm_campaign=loading`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {paper.caption}
+                      </a>
+                    </blockquote>
+                  </div>
+                ) : null}
+
+                {paper.kind === 'special' ? (
+                  <>
+                    <p className="note-handwriting-large">{paper.lines[0]}</p>
+                    <p className="note-handwriting-large note-highlight">
+                      {paper.lines[1]}
+                    </p>
+                    <div className="note-decorative-border" />
+                  </>
+                ) : null}
+
+                {paper.kind === 'compliment' ? (
+                  <>
+                    <p className="note-handwriting">{paper.lines[0]}</p>
+                    <p className="note-handwriting">{paper.lines[1]}</p>
+                    <p className="note-handwriting note-love-text">
+                      {paper.lines[2]}
+                    </p>
+                    <div className="note-stickers">
+                      <span>⭐</span>
+                      <span>💫</span>
+                      <span>✨</span>
+                    </div>
+                  </>
+                ) : null}
+
+                {paper.kind === 'instruction' ? (
+                  <>
+                    <p className="note-handwriting">💡 {paper.lines[0]}</p>
+                    <p className="note-handwriting">{paper.lines[1]}</p>
+                    <div className="note-demo-cursor">➜</div>
+                  </>
+                ) : null}
+              </>
+            )}
+          </div>
+        ))}
       </div>
 
-      {visiblePapers.map((paper) => (
-        <div
-          key={paper.id}
-          role="button"
-          tabIndex={0}
-          className={`note-paper note-${paper.kind}${
-            isDropSequence && paper.kind === 'instagram' ? ' is-dropping' : ''
-          }`}
-          style={{
-            transform: `translate(-50%, -50%) translate(${paper.x}px, ${paper.y}px) rotate(${paper.rotation}deg)`,
-            zIndex: paper.z,
-          }}
-          onClick={handlePaperClick}
-          onPointerDown={(event) => beginDrag(event, paper.id)}
-          onContextMenu={(event) => rotatePaper(event, paper.id)}
-        >
-          {paper.kind === 'instagram' ? (
-            <button
-              type="button"
-              className="note-instagram-close-button"
-              onClick={(event) => closePaper(event, paper.id)}
-              onPointerDown={(event) => event.stopPropagation()}
-              aria-label="인스타그램 카드 닫기"
-            >
-              닫기
-            </button>
-          ) : null}
-
-          {paper.kind === 'heart' ? (
-            <div className="note-heart-content">
-              <div className="note-main-heart">♥</div>
-              <p className="note-heart-text">닫거나 치우면서 보기</p>
-            </div>
-          ) : (
-            <>
-              {paper.kind !== 'instagram' ? (
-                <div className="note-paper-header">
-                  <span className="note-pin">
-                    {paper.kind === 'special' ? '★' : '📌'}
-                  </span>
-                  <span
-                    className={`note-paper-title${
-                      paper.kind === 'special' ? ' special' : ''
-                    }`}
-                  >
-                    {paper.title}
-                  </span>
-                </div>
-              ) : null}
-
-              {paper.kind === 'image' ? (
-                <>
-                  <p className="note-handwriting">{paper.lines[0]}</p>
-                  <p className="note-handwriting note-highlight">
-                    {paper.lines[1]}
-                  </p>
-                  <div className="note-image-frame">
-                    <img src={paper.image} alt={paper.title} />
-                    <span className="note-image-badge">♥</span>
-                  </div>
-                </>
-              ) : null}
-
-              {paper.kind === 'instagram' ? (
-                <div className="note-instagram-embed">
-                  <blockquote
-                    key={paper.permalink}
-                    className="instagram-media"
-                    data-instgrm-captioned=""
-                    data-instgrm-permalink={`${paper.permalink}?utm_source=ig_embed&utm_campaign=loading`}
-                    data-instgrm-version="14"
-                  >
-                    <a
-                      href={`${paper.permalink}?utm_source=ig_embed&utm_campaign=loading`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {paper.caption}
-                    </a>
-                  </blockquote>
-                </div>
-              ) : null}
-
-              {paper.kind === 'special' ? (
-                <>
-                  <p className="note-handwriting-large">{paper.lines[0]}</p>
-                  <p className="note-handwriting-large note-highlight">
-                    {paper.lines[1]}
-                  </p>
-                  <div className="note-decorative-border" />
-                </>
-              ) : null}
-
-              {paper.kind === 'compliment' ? (
-                <>
-                  <p className="note-handwriting">{paper.lines[0]}</p>
-                  <p className="note-handwriting">{paper.lines[1]}</p>
-                  <p className="note-handwriting note-love-text">
-                    {paper.lines[2]}
-                  </p>
-                  <div className="note-stickers">
-                    <span>⭐</span>
-                    <span>💫</span>
-                    <span>✨</span>
-                  </div>
-                </>
-              ) : null}
-
-              {paper.kind === 'instruction' ? (
-                <>
-                  <p className="note-handwriting">💡 {paper.lines[0]}</p>
-                  <p className="note-handwriting">{paper.lines[1]}</p>
-                  <div className="note-demo-cursor">➜</div>
-                </>
-              ) : null}
-            </>
-          )}
-        </div>
-      ))}
-    </div>
+      {isAnniversaryLetterOpen ? (
+        <AnniversaryLetterPage
+          onClose={() => setIsAnniversaryLetterOpen(false)}
+        />
+      ) : null}
+    </>
   )
 }
 
