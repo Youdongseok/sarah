@@ -1748,3 +1748,27 @@ body {
   border-radius: 58% 58% 50% 50%;
   transform: translateX(-50%);
 }
+
+.anniversary-lottie-page {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+
+.anniversary-lottie {
+  width: min(78vw, 420px);
+  height: min(78vw, 420px);
+}
+
+.anniversary-letter-stamp {
+  border: 1;
+  background: transparent;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 import { PawPrint } from 'lucide-react'
 function createInstagramPaper(id, permalink, title, x, y, rotation, z) {
   return {
@@ -164,6 +164,21 @@ function mergePapers(current, next) {
 }
 
 function AnniversaryLetterPage({ onClose }) {
+  const [isPawLottieOpen, setIsPawLottieOpen] = useState(false)
+
+  if (isPawLottieOpen) {
+    return (
+      <section className="anniversary-lottie-page" aria-label="강아지 발바닥 애니메이션">
+        <DotLottieReact
+          src="https://lottie.host/fa7e9aa3-e6f8-446e-afd2-5a67ab1ca609/IRMZK4IZWQ.lottie"
+          loop
+          autoplay
+          className="anniversary-lottie"
+        />
+      </section>
+    )
+  }
+
   return (
     <section className="anniversary-letter-page" aria-label="200일 기념 편지">
       <div className="anniversary-letter-bg-hearts" aria-hidden="true">
@@ -174,47 +189,71 @@ function AnniversaryLetterPage({ onClose }) {
         <span />
       </div>
 
-     
-
       <article className="anniversary-letter-sheet">
         <div className="letter-border" />
 
         <div className="anniversary-letter-sheet-header">
-          
-          <h1>200일 기념 편지!!</h1>
-          
+          <h1>💛200일 기념 편지💛</h1>
         </div>
 
         <div className="anniversary-letter-body">
-          <p>사라 안뇽! 나 동동이야! <br />강아지가 편지지 훔쳐가서 놀랐지</p>
           <p>
-           그거 알아?<br />
-우리 만난 지 벌써 200일이야!!<br />
-
-처음 만났을 때 크게 손 흔들던 것도 생각나고, 같이 빵 나눠 먹었던 것도 생각나.<br />
-어느새 손도 잡고, 뽀뽀도 하고, <br />시간이 진짜 빠르게 지나간 것 같아.<br />
-그만큼 사라랑 보낸 하루하루가 <br />나한테는 다 너무 소중하고 행복했어.<br />
-서로 장난치고 웃었던 날도,<br /> 산책하며 진지한 대화 했던 날도, <br />괜히 삐졌다가 금방 풀었던 날도 <br />전부 다 우리다운 추억인 것 같아. <br />
-
-그래서 인스타에 올린 우리 추억들을 모아봤어! <br />
-사라랑 함께한 순간들이 이렇게 많이 쌓였다는 게 너무 좋아!! <br />앞으로 더 많이 쌓아가고 싶어!!!<br />
-내가 부족할 때도 있었을 텐데 예쁘게 봐주고, <br />하루하루를 더 특별하게 만들어줘서 고마워.<br />
-앞으로도 지금처럼 장난도 많이 치고, <br />서로 챙겨주고, <br />가끔 아웅다웅 하더라도 <br />금방 풀면서 오래오래 예쁘게 만나자.<br />
-200일 동안 너무너무 행복했어<br /> 많이많이 사랑해
+            사라 안뇽! 나 동동이야! <br />
+            강아지가 편지지 훔쳐가서 놀랐지!!
           </p>
-          
+
+          <p>
+            그거 알아?
+            <br />
+            우리 만난 지 벌써 200일이야!!
+            <br />
+            <br />
+            처음 만났을 때 크게 손 흔들고 <br />같이 빵도 나눠 먹고
+            <br />
+            어느새 손도 잡고<br /> 그러다 사귀게 되었고!!<br />
+            시간이 진짜 빠르게 지나간 것 같아.
+            <br />
+            그만큼 사라랑 보낸 하루하루가 <br />
+            나한테는 너무 소중하고 행복했어.
+            <br />
+            서로 장난치고 웃었던 날도
+            <br /> 산책하며 진지한 대화 했던 날도 <br />
+            괜히 삐졌다가 금방 풀었던 날도 <br />
+            전부 다 우리다운 추억인 것 같아. <br />
+            <br />
+            그래서 인스타에 올린 우리 추억들을 모아봤어! <br />
+            사라랑 함께한 순간들이 이렇게 많이 쌓였다는 게 너무 좋아!! <br />
+            앞으로 더 많이 쌓아가고 싶어!!!
+            <br />
+            내가 부족할 때도 있었을 텐데<br />
+            이해해주고 배려해줘서 고마워💛<br />
+            하루하루를 더 특별하게 만들어줘서 고마워.
+            <br />
+            앞으로도 지금처럼 장난도 많이 치고, <br />
+            서로 챙기고, 가끔 아웅다웅 하더라도 <br />
+            금방 풀면서 오래오래 예쁘게 만나자.
+            <br />
+            200일 동안 너무너무 행복했어
+            <br /> 많이많이 사랑해💛
+          </p>
         </div>
 
         <div className="anniversary-letter-footer">
           <span>From. 동동</span>
-         <div className="anniversary-letter-stamp cursor-pointer" aria-label="강아지 발바닥 도장">
-  <PawPrint
-  size={40}
-  strokeWidth={2.6}
-  color="rgba(216, 166, 33, 0.72)"
-  fill="rgba(216, 166, 33, 0.72)"
-/>
-</div>
+
+          <button
+            type="button"
+            className="anniversary-letter-stamp cursor-pointer "
+            aria-label="강아지 발바닥 도장"
+            onClick={() => setIsPawLottieOpen(true)}
+          >
+            <PawPrint
+              size={40}
+              strokeWidth={2.6}
+              color="rgba(216, 166, 33, 0.72)"
+              fill="rgba(216, 166, 33, 0.72)"
+            />
+          </button>
         </div>
       </article>
     </section>
