@@ -576,7 +576,7 @@ function LoveNotesBoard({
                 onPointerDown={(event) => event.stopPropagation()}
                 aria-label="인스타그램 카드 닫기"
               >
-                닫기
+                💛
               </button>
             ) : null}
 
