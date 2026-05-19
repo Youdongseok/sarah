@@ -1196,24 +1196,26 @@ body {
 }
 
 .note-paper.note-instagram {
-  width: min(360px, calc(100vw - 40px));
-  min-width: 0;
-  max-width: none;
+  width: min(340px, calc(100vw - 48px));
+  min-width: 326px;
+  max-width: 340px;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 0;
-  border-radius: 18px;
-  background: #ffffff;
+  border-radius: 20px;
+  background: transparent;
   box-shadow:
-    0 24px 58px rgba(0, 0, 0, 0.22),
-    0 10px 24px rgba(0, 0, 0, 0.12);
+    0 26px 64px rgba(0, 0, 0, 0.24),
+    0 10px 24px rgba(0, 0, 0, 0.14);
   backdrop-filter: none;
   cursor: default;
   touch-action: auto;
 }
 
 .notes-board.is-chasing .note-paper.note-instagram {
-  width: min(380px, calc(100vw - 32px));
+  width: min(340px, calc(100vw - 48px));
+  min-width: 326px;
+  max-width: 340px;
   padding: 0;
 }
 
@@ -1224,19 +1226,45 @@ body {
 .note-instagram-embed {
   position: relative;
   width: 100%;
+  min-height: 520px;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 20px;
   background: #ffffff;
 }
 
+.note-instagram-embed::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.035), transparent) 0 0 / 180px 100% no-repeat,
+    linear-gradient(#f3f4f6, #f3f4f6) 18px 18px / 42px 42px no-repeat,
+    linear-gradient(#f3f4f6, #f3f4f6) 72px 24px / 84px 12px no-repeat,
+    linear-gradient(#f3f4f6, #f3f4f6) 72px 44px / 120px 10px no-repeat,
+    linear-gradient(#f3f4f6, #f3f4f6) 0 84px / 100% 300px no-repeat,
+    linear-gradient(#ffffff, #ffffff);
+  animation: instagram-skeleton 1.25s ease-in-out infinite;
+}
+
 .note-instagram-embed .instagram-media {
+  position: relative !important;
+  z-index: 1 !important;
   margin: 0 !important;
-  min-width: 0 !important;
+  min-width: 326px !important;
   width: 100% !important;
   max-width: 100% !important;
   border: 0 !important;
-  border-radius: 18px !important;
+  border-radius: 20px !important;
   box-shadow: none !important;
+  background: #ffffff !important;
+}
+
+.note-instagram-embed iframe {
+  position: relative;
+  z-index: 2;
+  display: block;
 }
 
 .note-close-button {
@@ -1245,22 +1273,31 @@ body {
 
 .note-instagram-close-button {
   position: absolute;
-  right: 7px;
-  top: 7px;
-  z-index: 90;
-  width: 110px;
-  height: 34px;
+  right: -12px;
+  top: -12px;
+  z-index: 120;
+  display: flex;
+  width: 38px;
+  height: 38px;
+  align-items: center;
+  justify-content: center;
   border: 0;
-  border-radius: 8px;
-  background: #ffffff;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
   color: #111827;
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 0;
+  font-weight: 900;
   box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.18),
+    0 10px 24px rgba(0, 0, 0, 0.2),
     inset 0 0 0 1px rgba(0, 0, 0, 0.08);
   cursor: pointer;
+}
+
+.note-instagram-close-button::before {
+  content: '×';
+  font-size: 24px;
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .note-instagram-close-button:hover {
@@ -1268,33 +1305,64 @@ body {
 }
 
 .note-instagram-close-button:active {
-  transform: scale(0.98);
+  transform: scale(0.94);
+}
+
+@keyframes instagram-skeleton {
+  0% {
+    background-position:
+      -180px 0,
+      18px 18px,
+      72px 24px,
+      72px 44px,
+      0 84px,
+      0 0;
+  }
+
+  100% {
+    background-position:
+      340px 0,
+      18px 18px,
+      72px 24px,
+      72px 44px,
+      0 84px,
+      0 0;
+  }
 }
 
 @media (max-width: 640px) {
 
   .note-paper.note-instagram,
   .notes-board.is-chasing .note-paper.note-instagram {
-    width: min(300px, calc(100vw - 20px));
-    max-width: none;
+    width: min(326px, calc(100vw - 40px));
+    min-width: 326px;
+    max-width: 326px;
     padding: 0;
-    border-radius: 16px;
+    border-radius: 18px;
+  }
+
+  .note-instagram-embed {
+    min-height: 500px;
+    border-radius: 18px;
   }
 
   .note-instagram-embed,
   .note-instagram-embed .instagram-media {
-    border-radius: 16px !important;
+    border-radius: 18px !important;
   }
 
   .note-instagram-close-button {
-    right: 4px;
-    top: 7px;
-    width: 110px;
-    height: 40px;
-    font-size: 12px;
-    border-radius: 8px;
+    right: -10px;
+    top: -10px;
+    width: 34px;
+    height: 34px;
+  }
+
+  .note-instagram-close-button::before {
+    font-size: 22px;
   }
 }
+
 
 .anniversary-letter-page {
   position: fixed;
